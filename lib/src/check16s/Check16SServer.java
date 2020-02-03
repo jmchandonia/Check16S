@@ -8,7 +8,6 @@ import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.JsonServerSyslog;
 import us.kbase.common.service.RpcContext;
-import us.kbase.common.service.UObject;
 
 //BEGIN_HEADER
 import java.net.URL;
@@ -33,9 +32,9 @@ import check16s.ReportResults;
  */
 public class Check16SServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
-    private static final String version = "";
-    private static final String gitUrl = "";
-    private static final String gitCommitHash = "";
+    private static final String version = "0.0.1";
+    private static final String gitUrl = "git@github.com:jmchandonia/Check16S.git";
+    private static final String gitCommitHash = "c530dac0e2710643b51ba7f26bc1d41309e12c10";
 
     //BEGIN_CLASS_HEADER
     private final URL callbackURL;
@@ -57,31 +56,18 @@ public class Check16SServer extends JsonServerServlet {
     }
 
     /**
-     * <p>Original spec-file function name: run_Check16S</p>
+     * <p>Original spec-file function name: check_16S</p>
      * <pre>
-     * This example function accepts any number of parameters and returns results in a KBaseReport
+     * Check the genomes in genomeset_ref against the 16S sequences in assembly_ref
      * </pre>
-     * @param   params   instance of mapping from String to unspecified object
+     * @param   params   instance of type {@link check16s.Check16SInput Check16SInput}
      * @return   parameter "output" of type {@link check16s.ReportResults ReportResults}
      */
-    @JsonServerMethod(rpc = "Check16S.run_Check16S", async=true)
-    public ReportResults runCheck16S(Map<String,UObject> params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
+    @JsonServerMethod(rpc = "Check16S.check_16S", async=true)
+    public ReportResults check16S(Check16SInput params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         ReportResults returnVal = null;
-        //BEGIN run_Check16S
-        final KBaseReportClient kbr = new KBaseReportClient(callbackURL, authPart);
-        kbr.setIsInsecureHttpConnectionAllowed(true);
-        final String ws_name = params.get("workspace_name").asInstance();
-        final String parameter_1 = params.get("parameter_1").asInstance();
-        final ReportInfo report = kbr.create(new CreateParams()
-                                        .withWorkspaceName(ws_name)
-                                        .withReport(new Report()
-                                                .withTextMessage(parameter_1)
-                                                .withObjectsCreated(new java.util.ArrayList<WorkspaceObject>())));
-
-        returnVal = new ReportResults()
-                        .withReportName(report.getName())
-                        .withReportRef(report.getRef());
-        //END run_Check16S
+        //BEGIN check_16S
+        //END check_16S
         return returnVal;
     }
     @JsonServerMethod(rpc = "Check16S.status")

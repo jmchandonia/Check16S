@@ -2,7 +2,7 @@ module-name:
     Check16S
 
 module-description:
-    A KBase module
+    This module checks that 16S sequences in annotated genomes are what is expected from Sanger sequencing
 
 service-language:
     java

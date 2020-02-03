@@ -1,10 +1,10 @@
 #
 # define display information
 #
-name: Method Name Here
+name: Check 16S sequences in a GenomeSet
 
 tooltip: |
-    Perform some kind of method
+    Check 16S sequences in a set of assembled and annotated isolates against their expected sequences, based on Sanger sequencing
 
 screenshots: []
 
@@ -24,17 +24,27 @@ suggestions:
 # Configure the display and description of parameters
 #
 parameters :
-    parameter_1 :
+    genomeset_ref :
         ui-name : |
-            First parameter
+            Isolate Genome Set
         short-hint : |
-            The first parameter
+            Isolate Genome Set
         long-hint  : |
-            The first parameter that needs to be entered to drive the method. This might be the first of many.
+            Isolate Genome Set.  Each genome in the set must be named "isolate_name.genome" to encode the name of each isolate, for mapping against the names in the 16S dataset.
+
+    assembly_ref :
+        ui-name : |
+            16S Sequences
+        short-hint : |
+            16S Sequences, uploaded as an Assembly
+        long-hint  : |
+            Expected 16S sequences, based on Sanger sequencing.  Each sequence must have only the isolate name in the FASTA header, for mapping against the genomes.
 
 description : |
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed pulvinar efficitur felis, quis tincidunt sem congue at. Vivamus ornare feugiat faucibus. Fusce tincidunt mattis nunc, nec varius purus convallis quis. Nulla facilisi. In at magna dolor. Suspendisse sit amet felis at arcu auctor dapibus vitae pharetra dui. Nam semper mi quis tortor fermentum mollis. Donec a arcu pharetra, rutrum dolor vitae, rutrum mauris. Donec ornare fringilla sagittis. Nam laoreet est in elementum malesuada. Vestibulum id mi eget urna hendrerit feugiat. Donec et ultrices nulla. Phasellus diam eros, dapibus at tempus nec, semper vel ante.</p>
+    <p>This checks that the 16S sequences obtained by Sanger sequencing for a bunch of isolates actually match the 16S sequences in the final assembled and annotated genomes.  It checks that there are no duplicate 16S sequences within one isolate (possibly indicating contamination), and that there are no matches to unexpected 16S sequences from the same batch of isolates (possibly indicating a mixup on the plate).</p>
 
-    <p>Curabitur auctor, metus at tristique euismod, odio elit tincidunt neque, a facilisis sem massa convallis dolor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nunc ut hendrerit tellus. Nunc lacinia laoreet finibus. Etiam vitae sagittis enim. Fusce consectetur porta est eu pretium. In hac habitasse platea dictumst. Integer pellentesque sit amet sapien id venenatis. Nullam ac risus at orci eleifend aliquet. Vestibulum elit purus, euismod a nibh quis, pellentesque semper leo. Curabitur ullamcorper felis hendrerit nunc egestas, sit amet pharetra sapien porttitor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Maecenas hendrerit ipsum a ligula aliquet vestibulum. Duis a ante urna. Aenean ante neque, rhoncus id luctus ut, accumsan vel nunc.</p>
+    <p>This uses BLASTN to compare the file of expected (i.e., Sanger-derived) 16S sequences to annotated 16S sequences (including partial ones) in all of the genomes in the genome set.</p>
 
-    <p>Pellentesque accumsan aliquet magna, id consectetur tellus condimentum eu. Suspendisse elit dui, ornare ac leo eget, tincidunt feugiat orci. Maecenas auctor gravida lacinia. Mauris interdum nisi vel gravida varius. Nullam tempus, purus eget posuere aliquet, odio elit semper massa, quis facilisis massa odio vitae lacus. Fusce varius enim a mi vehicula tempus. Maecenas faucibus tellus ipsum, at venenatis ipsum auctor et. Suspendisse sem mi, dignissim id porta efficitur, auctor eget magna. Vivamus varius purus nulla, porttitor euismod lorem cursus quis. Nulla sit amet eros nec sem ultrices pulvinar.</p>
+    <p>The names of the isolates must be encoded in the files: for the 16S sequences (uploaded to KBase as an Assembly object), each sequence must have only the isolate name in the FASTA header.  Each genome in the genome set of all isolates must be named "isolate_name.genome".</p>
+
+    <p>This method is based on a recommended manual protocol designed by Morgan Price.</p>

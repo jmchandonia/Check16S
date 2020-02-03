@@ -1,5 +1,5 @@
 FROM kbase/sdkbase2:latest
-MAINTAINER KBase Developer
+MAINTAINER John-Marc Chandonia
 # -----------------------------------------
 # In this section, you can install any system dependencies required
 # to run your App.  For instance, you could place an apt-get update or
@@ -8,6 +8,15 @@ MAINTAINER KBase Developer
 
 # RUN apt-get update
 
+RUN sudo apt-get update \
+        && sudo apt-get -y install openjdk-8-jdk \
+        && echo java versions: \
+        && java -version \
+        && javac -version \
+        && echo $JAVA_HOME \
+        && ls -l /usr/lib/jvm
+
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 # -----------------------------------------
 

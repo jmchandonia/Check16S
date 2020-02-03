@@ -11,7 +11,6 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.RpcContext;
-import us.kbase.common.service.UObject;
 import us.kbase.common.service.UnauthorizedException;
 
 /**
@@ -164,20 +163,20 @@ public class Check16SClient {
     }
 
     /**
-     * <p>Original spec-file function name: run_Check16S</p>
+     * <p>Original spec-file function name: check_16S</p>
      * <pre>
-     * This example function accepts any number of parameters and returns results in a KBaseReport
+     * Check the genomes in genomeset_ref against the 16S sequences in assembly_ref
      * </pre>
-     * @param   params   instance of mapping from String to unspecified object
+     * @param   params   instance of type {@link check16s.Check16SInput Check16SInput}
      * @return   parameter "output" of type {@link check16s.ReportResults ReportResults}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public ReportResults runCheck16S(Map<String,UObject> params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public ReportResults check16S(Check16SInput params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<ReportResults>> retType = new TypeReference<List<ReportResults>>() {};
-        List<ReportResults> res = caller.jsonrpcCall("Check16S.run_Check16S", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        List<ReportResults> res = caller.jsonrpcCall("Check16S.check_16S", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

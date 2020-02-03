@@ -4,21 +4,32 @@
         "jmc"
     ],
     "contact": "",
-    "categories": ["active"],
+    "categories": ["active", "assembly"],
     "widgets": {
         "input": null,
-        "output": null
+        "output": "no-display"
     },
     "parameters": [ 
         {
-            "id": "parameter_1",
+            "id": "genomeset_ref",
             "optional": true,
             "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
             "field_type": "text",
             "text_options": {
-                "valid_ws_types": [ ]
+                "valid_ws_types": [ "KBaseSearch.GenomeSet" ]
+            }
+        },
+        {
+            "id": "assembly_ref",
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": [ "KBaseGenomeAnnotations.Assembly" ]
             }
         }
     ],
@@ -26,17 +37,17 @@
         "service-mapping": {
             "url": "",
             "name": "Check16S",
-            "method": "run_Check16S",
+            "method": "check_16S",
             "input_mapping": [
                 {
                     "narrative_system_variable": "workspace",
-                    "target_property": "workspace_name"
+                    "target_property": "ws"
                 },{
-                    "narrative_system_variable": "workspace_id",
-                    "target_property": "workspace_id"
+                    "input_parameter": "genomeset_ref",
+                    "target_property": "genomeset_ref"
                 },{
-                    "input_parameter": "parameter_1",
-                    "target_property": "parameter_1"
+                    "input_parameter": "assembly_ref",
+                    "target_property": "assembly_ref"
                 }
             ],
             "output_mapping": [
