@@ -66,6 +66,10 @@ commit=${git.commit}</echo>
       <fileset dir="${src}">
       </fileset>
     </copy>
+    <!-- Copy dependencies-->
+    <unzip dest="${classes}">
+        <fileset refid="lib"/>
+    </unzip>
     <jar destfile="${dist}/${jar.file}" basedir="${classes}"/>
     <delete dir="${classes}"/>
   </target>

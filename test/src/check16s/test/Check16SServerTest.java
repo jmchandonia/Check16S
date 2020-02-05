@@ -16,8 +16,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import check16s.ReportResults;
-import check16s.Check16SServer;
+import check16s.*;
 import us.kbase.auth.AuthConfig;
 import us.kbase.auth.AuthToken;
 import us.kbase.auth.ConfigurableAuthService;
@@ -90,9 +89,12 @@ public class Check16SServerTest {
             }
         }
     }
-    
+
+    /**
+       test on pre-uploaded data, to avoid slow upload time
+    */
     @Test
-    public void testYourMethod() throws Exception {
+    public void testCheck16S() throws Exception {
         // Prepare test data using the appropriate uploader for that method (see the KBase function
         // catalog for help, https://narrative.kbase.us/#catalog/functions)
         //
@@ -102,9 +104,10 @@ public class Check16SServerTest {
         // Check returned data with
         // Assert.assertEquals(..., ret.getSomeProperty());
         // ... or other JUnit methods.
-        Map<String, UObject> params = new HashMap<>();
-        params.put("workspace_name", new UObject(getWsName()));
-        params.put("parameter_1", new UObject("Hello World"));
-        final ReportResults ret = impl.runCheck16S(params, token, getContext());
+        Check16SInput input = new Check16SInput()
+            .withGenomesetRef("37477/13/1")
+            .withAssemblyRef("37477/2/1")
+            .withWs(getWsName());
+        final ReportResults ret = impl.check16S(input, token, getContext());
     }
 }
