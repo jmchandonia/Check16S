@@ -66,6 +66,7 @@ public class Check16SServer extends JsonServerServlet {
     public ReportResults check16S(Check16SInput params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         ReportResults returnVal = null;
         //BEGIN check_16S
+        returnVal = Check16SImpl.check16S(authPart, params);
         //END check_16S
         return returnVal;
     }
