@@ -8,9 +8,13 @@ import java.util.*;
 import java.util.zip.*;
 
 import us.kbase.auth.AuthToken;
+import us.kbase.common.service.*;
+
+import com.fasterxml.jackson.databind.*;
 
 import assemblyutil.*;
 import datafileutil.*;
+import genomefileutil.*;
 
 public class Check16SImpl {
     /**
@@ -21,7 +25,6 @@ public class Check16SImpl {
         AssemblyUtilClient auClient = new AssemblyUtilClient(new URL(System.getenv("SDK_CALLBACK_URL")), token);
         auClient.setIsInsecureHttpConnectionAllowed(true);
         DataFileUtilClient dfuClient = new DataFileUtilClient(new URL(System.getenv("SDK_CALLBACK_URL")), token);
-
         dfuClient.setIsInsecureHttpConnectionAllowed(true);
         FastaAssemblyFile fa = auClient.getAssemblyAsFasta(new GetAssemblyParams()
                                                            .withRef(assemblyRef));
@@ -40,6 +43,19 @@ public class Check16SImpl {
         String path16S = downloadAssembly(token, assemblyRef);
 
         System.out.println("got 16S sequences as "+path16S);
+
+        // load genomeset
+        DataFileUtilClient dfuClient = new DataFileUtilClient(new URL(System.getenv("SDK_CALLBACK_URL")), token);
+        dfuClient.setIsInsecureHttpConnectionAllowed(true);
+        GenomefileutilClient gfuClient = new GenomefileutilClient(new URL(System.getenv("SDK_CALLBACK_URL")), token);
+        gfuClient.setIsInsecureHttpConnectionAllowed(true);
+        GetObjectsResults res = dfuClient.getObjects(new GetObjectsParams()
+                                                     .withObjectRefs(Arrays.asList(genomesetRef)));
+        JsonNode genomeSet = res.getData().get(0).getData().asJsonNode();
+        for (Iterator<String> iter = genomeSet.get("elements").fieldNames(); iter.hasNext(); ) {
+            String genomeRef = iter.next();
+            System.out.println("found genome "+genomeRef);
+        }
 
         return null;
     }

@@ -43,14 +43,14 @@ public class Check16SServer extends JsonServerServlet {
     public Check16SServer() throws Exception {
         super("Check16S");
         //BEGIN_CONSTRUCTOR
-    final String sdkURL = System.getenv("SDK_CALLBACK_URL");
-    try {
-        callbackURL = new URL(sdkURL);
-        System.out.println("Got SDK_CALLBACK_URL " + callbackURL);
-    } catch (MalformedURLException e) {
-        throw new IllegalArgumentException("Invalid SDK callback url: " + sdkURL, e);
-    }
-    scratch = Paths.get(super.config.get("scratch"));
+        final String sdkURL = System.getenv("SDK_CALLBACK_URL");
+        try {
+            callbackURL = new URL(sdkURL);
+            System.out.println("Got SDK_CALLBACK_URL " + callbackURL);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Invalid SDK callback url: " + sdkURL, e);
+        }
+        scratch = Paths.get(super.config.get("scratch"));
         //END_CONSTRUCTOR
     }
 
