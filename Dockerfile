@@ -9,7 +9,7 @@ MAINTAINER John-Marc Chandonia
 # RUN apt-get update
 
 RUN sudo apt-get update \
-        && sudo apt-get -y install openjdk-8-jdk \
+        && sudo apt-get -y install openjdk-8-jdk ncbi-blast+-legacy \
         && echo java versions: \
         && java -version \
         && javac -version \
