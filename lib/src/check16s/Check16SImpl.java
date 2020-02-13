@@ -358,8 +358,8 @@ public class Check16SImpl {
         ArrayList<kbasereport.File> files = new ArrayList<kbasereport.File>();
         files.add(new kbasereport.File()
                   .withPath(blastOutput.getPath())
-                  .withLabel("BLAST output")
-                  .withName(blastOutput.getName()));
+                  .withName("BLAST output")
+                  .withLabel(blastOutput.getName()));
 
         ReportInfo ri = makeReport(token,
                                    wsName,
