@@ -381,6 +381,7 @@ public class Check16SImpl {
                 }
             }
             else if (foundMismatch) {
+                remainingIsolates.remove(isolateID);
                 System.out.println("Mismatched isolate "+isolateID+" "+goodMatches.get(isolateID).toString());
                 reportText += "Mismatched isolate "+isolateID+"\n";
                 for (String s : goodMatches.get(isolateID))
