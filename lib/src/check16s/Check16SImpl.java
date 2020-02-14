@@ -153,7 +153,7 @@ public class Check16SImpl {
         
         String programName = "blastn";
         Program p = new Program(programName);
-        String[] i = new String[8];
+        String[] i = new String[12];
         i[0] = "-query";
         i[1] = query.getPath();
         i[2] = "-db";
@@ -162,6 +162,10 @@ public class Check16SImpl {
         i[5] = blastOutput.getPath();
         i[6] = "-outfmt";
         i[7] = "6 qseqid sseqid length nident qstart qseq sstart sseq";
+        i[8] = "-dust";
+        i[9] = "no";
+        i[10] = "-soft_masking";
+        i[11] = "false";
         p.run(i, null, baseDir);
 
         return (blastOutput);
@@ -224,10 +228,24 @@ public class Check16SImpl {
        number of Ns
     */
     public static int nN(String s) {
-        String s2 = s.toLowerCase();
         int rv = 0;
-        for (int i=0; i < s2.length(); i++)
-            if (s2.charAt(i)=='n')
+        for (int i=0; i < s.length(); i++)
+            if (s.charAt(i)=='N')
+                rv++;
+        return rv;
+    }
+
+    /**
+       number of identical residues, counting Ns as matches
+    */
+    public static int nIDN(String s1, String s2) {
+        if (s1.length() != s2.length())
+            throw new IllegalArgumentException("string lengths don't match");
+        int rv = 0;
+        for (int i=0; i < s1.length(); i++)
+            if ((s1.charAt(i)==s2.charAt(i)) ||
+                (s1.charAt(i)=='N') ||
+                (s2.charAt(i)=='N'))
                 rv++;
         return rv;
     }
@@ -324,8 +342,9 @@ public class Check16SImpl {
             String genomeID = genomeIDNum.substring(0,pos);
             String sangerID = fields[1];
             int length = StringUtil.atoi(fields[2]);
-            int nID = StringUtil.atoi(fields[3]);
-            double pctID = (double)nID / (double)length * 100.0;
+            // int nID = StringUtil.atoi(fields[3]);
+            int nIDN = nIDN(fields[5],fields[7]);
+            double pctID = (double)nIDN / (double)length * 100.0;
             if ((length >= 500) && (pctID >= 99.0))
                 addMatch(goodMatches, genomeID, sangerID+" "+length+" "+pctID);
             else if (length >= 200)
@@ -356,12 +375,16 @@ public class Check16SImpl {
                 }
                 else {
                     System.out.println("Ambiguous isolate "+isolateID+" "+goodMatches.get(isolateID).toString());
-                    reportText += "Ambiguous isolate "+isolateID+" "+goodMatches.get(isolateID).toString()+"\n";
+                    reportText += "Ambiguous isolate "+isolateID+"\n";
+                    for (String s : goodMatches.get(isolateID))
+                        reportText += " matches "+s+"\n";
                 }
             }
             else if (foundMismatch) {
                 System.out.println("Mismatched isolate "+isolateID+" "+goodMatches.get(isolateID).toString());
-                reportText += "Mismatched isolate "+isolateID+" "+goodMatches.get(isolateID).toString()+"\n";
+                reportText += "Mismatched isolate "+isolateID+"\n";
+                for (String s : goodMatches.get(isolateID))
+                    reportText += " matches "+s+"\n";
             }
         }
 
@@ -386,12 +409,16 @@ public class Check16SImpl {
                     }
                     else {
                         System.out.println("Ambiguous (low conf) isolate "+isolateID+" "+badMatches.get(isolateID).toString());
-                        reportText += "Ambiguous (low conf) isolate "+isolateID+" "+badMatches.get(isolateID).toString()+"\n";
+                        reportText += "Ambiguous (low conf) isolate "+isolateID+"\n";
+                        for (String s : badMatches.get(isolateID))
+                            reportText += " matches "+s+"\n";
                     }
                 }
                 else if (foundMismatch) {
                     System.out.println("Mismatched (low conf) isolate "+isolateID+" "+badMatches.get(isolateID).toString());
-                    reportText += "Mismatched (low conf) isolate "+isolateID+" "+badMatches.get(isolateID).toString()+"\n";
+                    reportText += "Mismatched (low conf) isolate "+isolateID+"\n";
+                    for (String s : badMatches.get(isolateID))
+                        reportText += " matches "+s+"\n";
                 }
             }
         }
