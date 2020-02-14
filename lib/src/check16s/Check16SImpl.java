@@ -49,7 +49,7 @@ public class Check16SImpl {
     */
     public static java.io.File download16S(AuthToken token,
                                            java.io.File baseDir,
-                                           HashSet<String> isolatesWith16S,
+                                           Set<String> isolatesWith16S,
                                            String genomesetRef) throws Exception {
         // load genomeset
         DataFileUtilClient dfuClient = new DataFileUtilClient(new URL(System.getenv("SDK_CALLBACK_URL")), token);
@@ -170,7 +170,7 @@ public class Check16SImpl {
     /**
        add a match
     */
-    public static void addMatch(HashMap<String,HashSet<String>> map,
+    public static void addMatch(Map<String,HashSet<String>> map,
                                 String key,
                                 String value) {
         HashSet<String> values = map.get(key);
@@ -181,10 +181,10 @@ public class Check16SImpl {
     }
 
     /**
-       get list of sequence ids in a file
-       */
-    public static HashSet<String> getSeqNames(java.io.File f) throws Exception {
-        HashSet<String> rv = new HashSet<String>();
+       get map of sequence ids to sequences in a file
+    */
+    public static HashMap<String,String> getSeqs(java.io.File f) throws Exception {
+        HashMap<String,String> rv = new HashMap<String,String>();
         BufferedReader seqs = IO.openReader(f.getPath());
         PolymerSet ps = new PolymerSet();
         Enumeration pe = ps.polymersInFile(seqs, null);
@@ -196,7 +196,7 @@ public class Check16SImpl {
                 continue;
             
             String seqName = p.name;
-            rv.add(seqName);
+            rv.put(seqName,p.sequence());
         }
         seqs.close();
         return rv;
@@ -221,6 +221,18 @@ public class Check16SImpl {
     }
 
     /**
+       number of Ns
+    */
+    public static int nN(String s) {
+        String s2 = s.toLowerCase();
+        int rv = 0;
+        for (int i=0; i < s2.length(); i++)
+            if (s2.charAt(i)=='n')
+                rv++;
+        return rv;
+    }
+
+    /**
        check 16S vs expected sequences
     */
     public static ReportResults check16S(AuthToken token,
@@ -236,7 +248,8 @@ public class Check16SImpl {
         java.io.File baseDir = fileSanger16S.getParentFile();
 
         // keep track of the isolates with Sanger 16S sequences
-        HashSet<String> isolatesWithSanger16S = getSeqNames(fileSanger16S);
+        Map<String,String> sanger16S = getSeqs(fileSanger16S);
+        Set<String> isolatesWithSanger16S = sanger16S.keySet();
 
         // dump out the 16S sequences from the genomeset to a fasta file
         java.io.File fileGenome16S = download16S(token,
@@ -246,12 +259,46 @@ public class Check16SImpl {
         System.out.println("Got genome 16S sequences as "+fileGenome16S.getPath());
 
         // keep track of isolates with genome 16S sequences
-        HashSet<String> isolateNumsWithGenome16S = getSeqNames(fileGenome16S);
-        HashSet<String> isolatesWithGenome16S = new HashSet<String>();
-        for (String isolateIDNum : isolateNumsWithGenome16S) {
+        Map<String,String> genome16S = getSeqs(fileGenome16S);
+        Set<String> isolatesWithGenome16S = new HashSet<String>();
+        for (String isolateIDNum : genome16S.keySet()) {
             int pos = isolateIDNum.lastIndexOf("-");
             String isolateID = isolateIDNum.substring(0,pos);
-            isolatesWithGenome16S.add(isolateID);
+            if (!isolatesWithGenome16S.contains(isolateID)) {
+                isolatesWithGenome16S.add(isolateID);
+
+                // check whether match is possible
+                String seq = genome16S.get(isolateIDNum);
+                int n = nN(seq);
+                if (seq.length() < 500) {
+                    System.out.println("Warning: "+isolateID+" genome 16S is too short to validate; length "+seq.length());
+                    reportText += "Warning: "+isolateID+" genome 16S is too short to validate; length "+seq.length();
+                }
+                else if (seq.length()-n < 500) {
+                    System.out.println("Warning: "+isolateID+" genome 16S has too many Ns to validate; length "+seq.length()+", nN "+n);
+                    reportText += "Warning: "+isolateID+" genome 16S has too many Ns to validate; length "+seq.length()+", nN "+n;
+                }
+                seq = sanger16S.get(isolateID);
+                if (seq==null) {
+                    System.out.println("Warning: "+isolateID+" Sanger 16S not provided in Sanger set");
+                    reportText += "Warning: "+isolateID+" Sanger 16S not provided in Sanger set";
+                }
+                else {
+                    n = nN(seq);
+                    if (seq.length() < 500) {
+                        System.out.println("Warning: "+isolateID+" Sanger 16S is too short to validate; length "+seq.length());
+                        reportText += "Warning: "+isolateID+" Sanger 16S is too short to validate; length "+seq.length();
+                    }
+                    else if (seq.length()-n < 500) {
+                        System.out.println("Warning: "+isolateID+" Sanger 16S has too many Ns to validate; length "+seq.length()+", nN "+n);
+                        reportText += "Warning: "+isolateID+" Sanger 16S has too many Ns to validate; length "+seq.length()+", nN "+n;
+                    }
+                }
+            }
+            else {
+                System.out.println("Warning - "+isolateID+" has multiple 16S annotated");
+                reportText += "Warning - "+isolateID+" has multiple 16S annotated";
+            }
         }
         
         // setup blast
@@ -265,8 +312,8 @@ public class Check16SImpl {
         // process output
         BufferedReader infile = IO.openReader(blastOutput.getPath());
         String buffer = null;
-        HashMap<String,HashSet<String>> goodMatches = new HashMap<String,HashSet<String>>();
-        HashMap<String,HashSet<String>> badMatches = new HashMap<String,HashSet<String>>();
+        Map<String,HashSet<String>> goodMatches = new HashMap<String,HashSet<String>>();
+        Map<String,HashSet<String>> badMatches = new HashMap<String,HashSet<String>>();
         while ((buffer = infile.readLine()) != null) {
             // qseqid sseqid length nident qstart qseq sstart sseq
             String[] fields = buffer.split("\t");
@@ -280,14 +327,14 @@ public class Check16SImpl {
             int nID = StringUtil.atoi(fields[3]);
             double pctID = (double)nID / (double)length * 100.0;
             if ((length >= 500) && (pctID >= 99.0))
-                addMatch(goodMatches, genomeID, sangerID);
+                addMatch(goodMatches, genomeID, sangerID+" "+length+" "+pctID);
             else if (length >= 200)
-                addMatch(badMatches, genomeID, sangerID);
+                addMatch(badMatches, genomeID, sangerID+" "+length+" "+pctID);
         }
         infile.close();
 
         // find all good genomes (matching only one 16S with same label)
-        HashSet<String> remainingIsolates = new HashSet<String>();
+        Set<String> remainingIsolates = new HashSet<String>();
         remainingIsolates.addAll(isolatesWithGenome16S);
         for (String isolateID: isolatesWithGenome16S) {
             boolean foundMatch = false;
@@ -295,7 +342,7 @@ public class Check16SImpl {
             HashSet<String> matches = goodMatches.get(isolateID);
             if (matches != null) {
                 for (String matchID: matches) {
-                    if (matchID.equals(isolateID))
+                    if (matchID.startsWith(isolateID+" "))
                         foundMatch = true;
                     else
                         foundMismatch = true;
@@ -325,7 +372,7 @@ public class Check16SImpl {
                 HashSet<String> matches = badMatches.get(isolateID);
                 if (matches != null) {
                     for (String matchID: matches) {
-                        if (matchID.equals(isolateID))
+                        if (matchID.startsWith(isolateID+" "))
                             foundMatch = true;
                         else
                             foundMismatch = true;
@@ -357,10 +404,17 @@ public class Check16SImpl {
         // save blast output in report
         ArrayList<kbasereport.File> files = new ArrayList<kbasereport.File>();
         files.add(new kbasereport.File()
+                  .withPath(fileGenome16S.getPath())
+                  .withDescription("Genome 16S sequences")
+                  .withLabel("Genome16S sequences")
+                  .withName(fileGenome16S.getName()));
+
+        files.add(new kbasereport.File()
                   .withPath(blastOutput.getPath())
                   .withDescription("BLAST output")
+                  .withLabel("BLAST output")
                   .withName(blastOutput.getName()));
-
+        
         ReportInfo ri = makeReport(token,
                                    wsName,
                                    files,
