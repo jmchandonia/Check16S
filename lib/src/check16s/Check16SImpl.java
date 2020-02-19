@@ -82,7 +82,8 @@ public class Check16SImpl {
             String isolateName = genomeName.substring(0,pos);
             System.out.println("  Found isolate "+isolateName);
             if (!isolatesWith16S.contains(isolateName))
-                throw new Exception("Isolate name '"+isolateName+"' does not have a Sanger 16S sequence in the 16S file provided.");
+                System.out.println("Warning: Isolate name '"+isolateName+"' does not have a Sanger 16S sequence in the 16S file provided.");
+                // throw new Exception("Isolate name '"+isolateName+"' does not have a Sanger 16S sequence in the 16S file provided.");
 
             // save all the noncoding regions into a fasta file
             // then put all the annotated 16S sequences into their own file
