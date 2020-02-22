@@ -11,7 +11,13 @@ module Check16S {
     typedef structure {
         string genomeset_ref;
         string assembly_ref;
-        string ws;
+        string ws_name;
+        int ws_id;
+	int max_differences;
+	int min_significant_differences;
+	string output_genomeset_pass;
+	string output_genomeset_fail;
+	string output_genomeset_unknown;
     } Check16SInput;
 
     /*

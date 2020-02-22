@@ -33,7 +33,7 @@ public class Check16SServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
     private static final String gitUrl = "git@github.com:jmchandonia/Check16S.git";
-    private static final String gitCommitHash = "3e5f89cca578aed7d18c95f012a224608e033ee4";
+    private static final String gitCommitHash = "d16a3300a10b763f70eacbfa5fa9097fbd768320";
 
     //BEGIN_CLASS_HEADER
     private final URL callbackURL;

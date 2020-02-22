@@ -36,15 +36,61 @@ parameters :
         ui-name : |
             16S Sequences
         short-hint : |
-            16S Sequences, uploaded as an Assembly
+            Expected 16S Sequences, uploaded as an Assembly
         long-hint  : |
             Expected 16S sequences, based on Sanger sequencing.  Each sequence must have only the isolate name in the FASTA header, for mapping against the genomes.
 
+    max_differences :
+        ui-name : |
+            Maximum SNPs to pass
+        short-hint : |
+            Maximum number of SNPs between genome and Sanger 16S sequences that can still pass
+
+    min_significant_differences :
+        ui-name : |
+            Minimum SNPs to infer different sequence
+        short-hint : |
+            Minimum SNPs to assert different sequence (i.e. different genome 16S, or a better hit among Sanger 16S sequences)
+
+    output_genomeset_pass :
+        ui-name : |
+            Output passed genomes
+        short-hint : |
+            Output set of genomes that pass 16S checks
+
+    output_genomeset_fail :
+        ui-name : |
+            Output failed genomes
+        short-hint : |
+            Output set of genomes that fail 16S checks
+
+    output_genomeset_unknown :
+        ui-name : |
+            Output unknown genomes
+        short-hint : |
+            Output set of genomes that could not be checked due to missing data
+
 description : |
-    <p>This checks that the 16S sequences obtained by Sanger sequencing for a bunch of isolates actually match the 16S sequences in the final assembled and annotated genomes.  It checks that there are no duplicate 16S sequences within one isolate (possibly indicating contamination), and that there are no matches to unexpected 16S sequences from the same batch of isolates (possibly indicating a mixup on the plate).</p>
+    <p>This app checks that the 16S sequences obtained by Sanger sequencing for a bunch of isolates actually match the 16S sequences in the final assembled and annotated genomes.  It checks that there are no duplicate 16S sequences within one isolate (possibly indicating contamination), and that there are no matches to unexpected 16S sequences from the same batch of isolates (possibly indicating a mixup on the plate).</p>
 
-    <p>This uses BLASTN to compare the file of expected (i.e., Sanger-derived) 16S sequences to annotated 16S sequences (including partial ones) in all of the genomes in the genome set.</p>
+    <p>The names of the isolates must be encoded in the files: for the 16S sequences (uploaded to KBase as an Assembly object), each sequence must have only the isolate name in the FASTA header.  Each genome in the genome set of all isolates must be named "isolate_name.genome".  Note that isolate names cannot contain spaces, since KBase object names cannot contains spaces.</p>
 
-    <p>The names of the isolates must be encoded in the files: for the 16S sequences (uploaded to KBase as an Assembly object), each sequence must have only the isolate name in the FASTA header.  Each genome in the genome set of all isolates must be named "isolate_name.genome".</p>
+    <p>The app uses BLASTN to compare the file of expected (i.e., Sanger-derived) 16S sequences to annotated 16S sequences (including partial ones) in all of the genomes in the genome set.  It also compares the annotated 16S sequences to each other, in cases where at least one annotated genome contains multiple 16S sequences.  Only hits of 500 base pairs or more in length are considered.  A "SNP" means that an aligned base is different between the query and the hit, or that a base is aligned to a gap.  A "N" in either sequence aligned to a different base in the other sequence is not counted as a SNP, but a N aligned to a gap is counted as a SNP.</p>
+
+    <p>The algorithm takes each Genome in the input GenomeSet, and assigns it to one of three output GenomeSets based on the results above:
+
+    <ul>
+
+    <li>Genomes that have no more than <i>max_differences</i> (default: 3) SNPs between the annotated and expected 16S, and for which no other isolate's expected 16S has significantly fewer SNPs (significance is defined by <i>min_significant_differences</i> (default: 2) are placed in the <b>passed</b> set.
+
+    <li>Genomes that have more than <i>max_differences</i> (default: 3) SNPs between the annotated and expected 16S, or which contain multiple annotated 16S sequences with more than <i>min_significant_differences</i> (default: 2) SNPs between them, are placed in the <b>failed</b> set.
+
+    <li>All other genomes are placed in the <b>unknown</b> set.  Often, these are missing either an annotated or expected 16S sequence, or have no hits of at least 500 base pairs to the expected set (meaning one of the sequences is probably either too short or mis-annotated).
+
+    </ul>
+
+    <p>To help debug the output, or to allow manual examination of the results, all BLASTN outputs, and the complete list of annotated 16S sequences in the input GenomeSet are provided in the report.  The BLAST output contains the following columns:  <i>qseqid sseqid length nident qstart qseq sstart sseq</i>.  Annotated 16S sequences are named with the isolate name followed by "-0", "-1", etc, where the numbers indicate different annotated 16S sequences in each isolate genome.</p>
+
+    <p>The output report also contains a TSV table with one line per isolate: The columns are: <i>isolate_name highest_num_snps_with_expected_16S lowest_num_snps_with_other_isolate_sanger_16S other_isolate_sanger_16S lowest_num_snps_with_other_isolate_genome_16S other_isolate_genome_16S num_genome_16S max_num_snps_between_genome_16S output_set</i></p>
 
     <p>This method is based on a recommended manual protocol designed by Morgan Price.</p>

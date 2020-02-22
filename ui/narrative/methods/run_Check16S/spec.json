@@ -1,9 +1,10 @@
 {
-    "ver": "0.0.1",
+    "ver": "1.0.0",
     "authors": [
         "jmc"
     ],
-    "contact": "",
+    "visible" : true,
+    "contact": "http://kbase.us/contact-us/",
     "categories": ["active", "assembly"],
     "widgets": {
         "input": null,
@@ -12,7 +13,7 @@
     "parameters": [ 
         {
             "id": "genomeset_ref",
-            "optional": true,
+            "optional": false,
             "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
@@ -23,13 +24,73 @@
         },
         {
             "id": "assembly_ref",
-            "optional": true,
+            "optional": false,
             "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
             "field_type": "text",
             "text_options": {
                 "valid_ws_types": [ "KBaseGenomeAnnotations.Assembly" ]
+            }
+        },
+        {
+            "id": "max_differences",
+            "optional": false,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ 3 ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "int",
+                "min_int" : 0
+            }
+        },
+        {
+            "id": "min_significant_differences",
+            "optional": false,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ 2 ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "int",
+                "min_int" : 1
+            }
+        },
+        {
+            "id": "output_genomeset_pass",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": "check16S-pass.genomeset",
+            "field_type": "text",
+            "text_options": {
+                "is_output_name": true,
+                "valid_ws_types": [ "KBaseSearch.GenomeSet" ]
+            }
+        },
+        {
+            "id": "output_genomeset_fail",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": "check16S-fail.genomeset",
+            "field_type": "text",
+            "text_options": {
+                "is_output_name": true,
+                "valid_ws_types": [ "KBaseSearch.GenomeSet" ]
+            }
+        },
+        {
+            "id": "output_genomeset_unknown",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": "check16S-unknown.genomeset",
+            "field_type": "text",
+            "text_options": {
+                "is_output_name": true,
+                "valid_ws_types": [ "KBaseSearch.GenomeSet" ]
             }
         }
     ],
@@ -41,7 +102,10 @@
             "input_mapping": [
                 {
                     "narrative_system_variable": "workspace",
-                    "target_property": "ws"
+                    "target_property": "ws_name"
+                },{
+                    "narrative_system_variable": "workspace_id",
+                    "target_property": "ws_id"
                 },{
                     "input_parameter": "genomeset_ref",
                     "target_property": "genomeset_ref",
@@ -50,6 +114,21 @@
                     "input_parameter": "assembly_ref",
                     "target_property": "assembly_ref",
 		    "target_type_transform": "resolved-ref"
+                },{
+                    "input_parameter": "max_differences",
+                    "target_property": "max_differences"
+                },{
+                    "input_parameter": "min_significant_differences",
+                    "target_property": "min_significant_differences"
+                },{
+                    "input_parameter": "output_genomeset_pass",
+                    "target_property": "output_genomeset_pass"
+                },{
+                    "input_parameter": "output_genomeset_fail",
+                    "target_property": "output_genomeset_fail"
+                },{
+                    "input_parameter": "output_genomeset_unknown",
+                    "target_property": "output_genomeset_unknown"
                 }
             ],
             "output_mapping": [

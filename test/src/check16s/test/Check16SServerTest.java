@@ -107,7 +107,13 @@ public class Check16SServerTest {
         Check16SInput input = new Check16SInput()
             .withGenomesetRef("37477/13/1")
             .withAssemblyRef("37477/2/1")
-            .withWs(getWsName());
+            .withMaxDifferences(new Long(3L))
+            .withMinSignificantDifferences(new Long(2L))
+            .withOutputGenomesetPass("test_pass.genomeset")
+            .withOutputGenomesetFail("test_fail.genomeset")
+            .withOutputGenomesetUnknown("test_unknown.genomeset")
+            .withWsId(new Long(37477))
+            .withWsName(getWsName());
         final ReportResults ret = impl.check16S(input, token, getContext());
     }
 }
