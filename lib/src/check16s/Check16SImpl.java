@@ -533,7 +533,7 @@ public class Check16SImpl {
             for (int i=0; i<n; i++) {
                 String isolateIDNum = isolateID+"-"+i;
             
-                HashSet<String> hits = matches.get(isolateID);
+                HashSet<String> hits = matches.get(isolateIDNum);
                 if (hits != null)
                     for (String hit: hits) {
                         int pos = hit.lastIndexOf(" ");
@@ -633,7 +633,7 @@ public class Check16SImpl {
                 set = "unknown";
 
             // check hits and build report table
-            reportTSV += isolateID;
+            reportTSV += isolateID+"\t";
             Integer ii = maxExpectedSNPs.get(isolateID);
             int expectedSNPs = -1;
             if (ii==null)
