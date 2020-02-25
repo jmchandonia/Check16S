@@ -31,9 +31,9 @@ import check16s.ReportResults;
  */
 public class Check16SServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
-    private static final String version = "0.0.1";
+    private static final String version = "1.0.0";
     private static final String gitUrl = "git@github.com:jmchandonia/Check16S.git";
-    private static final String gitCommitHash = "d16a3300a10b763f70eacbfa5fa9097fbd768320";
+    private static final String gitCommitHash = "82e4af40d5c05e5227eae044bb78ce7aced430a7";
 
     //BEGIN_CLASS_HEADER
     private final URL callbackURL;
@@ -66,7 +66,8 @@ public class Check16SServer extends JsonServerServlet {
     public ReportResults check16S(Check16SInput params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         ReportResults returnVal = null;
         //BEGIN check_16S
-        returnVal = Check16SImpl.check16S(authPart, params);
+        java.io.File scratchDir = new java.io.File(scratch.toString());
+        returnVal = Check16SImpl.check16S(authPart, scratchDir, params);
         //END check_16S
         return returnVal;
     }

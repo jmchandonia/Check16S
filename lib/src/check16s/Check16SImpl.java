@@ -44,6 +44,35 @@ public class Check16SImpl {
     }
 
     /**
+       Filter gaps out of assembly, make new file in base dir
+    */
+    public static java.io.File filterAssembly(java.io.File originalFile,
+                                              String filteredFileName,
+                                              java.io.File baseDir) throws Exception {
+
+        java.io.File rv = new java.io.File(baseDir.getPath()+"/"+filteredFileName);
+        rv.delete();
+        
+        PrintfStream outfile = new PrintfStream(rv.getPath());
+        BufferedReader seqs = IO.openReader(originalFile.getPath());
+        PolymerSet ps = new PolymerSet();
+        Enumeration pe = ps.polymersInFile(seqs, null);
+        while ((pe.hasMoreElements() && (seqs.ready()))) {
+            Polymer p;
+            p = (Polymer)pe.nextElement();
+            
+            if (p==null)
+                continue;
+            
+            p.stripGaps();
+            p.writeFasta(outfile);
+        }
+        seqs.close();
+        outfile.close();
+        return rv;
+    }
+
+    /**
        Download genomeset and return a map of genome names to references
     */
     public static HashMap<String,String> downloadGenomeset(AuthToken token,
@@ -59,7 +88,7 @@ public class Check16SImpl {
                                                      .withObjectRefs(Arrays.asList(genomesetRef)));
         JsonNode genomeset = res.getData().get(0).getData().asJsonNode();
         System.out.println("Got GenomeSet");
-        System.out.println("Debug: "+genomeset.toString());
+        // System.out.println("Debug: "+genomeset.toString());
 
         // loop over genomes and find all their names and references
         for (Iterator<String> iter = genomeset.get("elements").fieldNames(); iter.hasNext(); ) {
@@ -76,7 +105,7 @@ public class Check16SImpl {
     }
 
     /**
-       save a genomeset
+       save a genomeset to a workspace
     */
     public static WorkspaceObject saveGenomeset(AuthToken token,
                                                 Long wsId,
@@ -117,6 +146,9 @@ public class Check16SImpl {
                 .withDescription(description));
     }
 
+    /**
+       helper function to get ref from object info
+    */
     public static String getRefFromObjectInfo(Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>> info) {
         return info.getE7() + "/" + info.getE1() + "/" + info.getE5();
     }
@@ -127,16 +159,17 @@ public class Check16SImpl {
        isolates we have Sanger seqs for.
     */
     public static java.io.File download16S(AuthToken token,
+                                           String fileName,
                                            java.io.File baseDir,
                                            HashMap<String,String> genomesetMap) throws Exception {
         GenomefileutilClient gfuClient = new GenomefileutilClient(new URL(System.getenv("SDK_CALLBACK_URL")), token);
         gfuClient.setIsInsecureHttpConnectionAllowed(true);
 
         // make a FASTA file to save all the 16S sequences into
-        java.io.File fileGenome16S = java.io.File.createTempFile("genome16s",".fa",
-                                                                 baseDir);
-        fileGenome16S.delete();
-        PrintfStream outfile = new PrintfStream(fileGenome16S.getPath());
+        java.io.File rv = new java.io.File(baseDir.getPath()+"/"+fileName);
+        rv.delete();
+        
+        PrintfStream outfile = new PrintfStream(rv.getPath());
 
         // loop over genomes and find all their annotated 16S sequences
         for (String genomeName: genomesetMap.keySet()) {
@@ -170,6 +203,8 @@ public class Check16SImpl {
                 if (seqName.indexOf("16S ribosomal RNA") > -1) {
                     // rename according to the isolate name
                     p.name = isolateID+"-"+(n16S++);
+                    // strip any gaps already in the sequence
+                    p.stripGaps();
                     // and save it in the "genome 16S" file
                     p.writeFasta(outfile);
                 }
@@ -185,7 +220,7 @@ public class Check16SImpl {
                 System.out.println("  Warning - "+n16S+" different 16S annotated for "+isolateID);
         }
         outfile.close();
-        return fileGenome16S;
+        return rv;
     }
 
     /**
@@ -268,11 +303,11 @@ public class Check16SImpl {
        run blast, returning output file
     */
     public static java.io.File runBlast(java.io.File query,
-                                        java.io.File db) throws Exception {
+                                        java.io.File db,
+                                        String fileName) throws Exception {
         java.io.File baseDir = query.getParentFile();
-        java.io.File blastOutput = java.io.File.createTempFile("bla",".txt",
-                                                               baseDir);
-        blastOutput.delete();
+        java.io.File rv = new java.io.File(baseDir.getPath()+"/"+fileName);
+        rv.delete();
         
         String programName = "blastn";
         Program p = new Program(programName);
@@ -282,7 +317,7 @@ public class Check16SImpl {
         i[2] = "-db";
         i[3] = db.getPath();
         i[4] = "-out";
-        i[5] = blastOutput.getPath();
+        i[5] = rv.getPath();
         i[6] = "-outfmt";
         i[7] = "6 qseqid sseqid length nident qstart qseq sstart sseq";
         i[8] = "-dust";
@@ -291,7 +326,7 @@ public class Check16SImpl {
         i[11] = "false";
         p.run(i, null, baseDir);
 
-        return (blastOutput);
+        return rv;
     }
 
     /**
@@ -409,6 +444,7 @@ public class Check16SImpl {
        check 16S vs expected sequences
     */
     public static ReportResults check16S(AuthToken token,
+                                         java.io.File scratchDir,
                                          Check16SInput input) throws Exception {
         String genomesetRef = input.getGenomesetRef();
         String assemblyRef = input.getAssemblyRef();
@@ -418,11 +454,21 @@ public class Check16SImpl {
         Long wsId = input.getWsId();
         String reportText = "";
 
+        // make a temporary directory for results
+        java.io.File baseDir = java.io.File.createTempFile("dir","",
+                                                           scratchDir);
+        baseDir.delete();
+        baseDir.mkdirs();
+
         // dump out 16S sequences to fasta file
-        java.io.File fileSanger16S = downloadAssembly(token,
-                                                      assemblyRef);
-        System.out.println("Got Sanger 16S sequences as "+fileSanger16S.getPath());
-        java.io.File baseDir = fileSanger16S.getParentFile();
+        java.io.File fileSanger16SUF = downloadAssembly(token,
+                                                        assemblyRef);
+        System.out.println("Got Sanger 16S sequences as "+fileSanger16SUF.getPath());
+        java.io.File fileSanger16S = filterAssembly(fileSanger16SUF,
+                                                    "sanger16S.fa",
+                                                    baseDir);
+        
+        System.out.println("Filtered Sanger 16S sequences as "+fileSanger16S.getPath());
 
         // keep track of the isolates with Sanger 16S sequences
         Map<String,String> sanger16S = getSeqs(fileSanger16S);
@@ -434,6 +480,7 @@ public class Check16SImpl {
 
         // dump out the 16S sequences from the genomeset to a fasta file
         java.io.File fileGenome16S = download16S(token,
+                                                 "genome16S.fa",
                                                  baseDir,
                                                  genomesetMap);
         System.out.println("Got genome 16S sequences as "+fileGenome16S.getPath());
@@ -514,7 +561,7 @@ public class Check16SImpl {
 
         // run blast
         System.out.println("Running BLAST");
-        java.io.File blastOutput = runBlast(fileGenome16S, fileSanger16S);
+        java.io.File blastOutput = runBlast(fileGenome16S, fileSanger16S, "assembly-vs-genome-blast.tsv");
 
         // process output
         Map<String,HashSet<String>> matches = processBlast(blastOutput);
@@ -585,7 +632,7 @@ public class Check16SImpl {
 
             // run blast
             System.out.println("Running BLAST for multi-16S genomes");
-            blastOutputMulti = runBlast(fileMulti16S, fileMulti16S);
+            blastOutputMulti = runBlast(fileMulti16S, fileMulti16S, "genome-multi-16s-blast.tsv");
 
             // process output
             Map<String,HashSet<String>> matchesMulti = processBlast(blastOutputMulti);
@@ -618,7 +665,7 @@ public class Check16SImpl {
         HashSet<String> isolatesUnknown = new HashSet<String>();
 
         // build table of where each isolate ends up
-        String reportTSV = "";
+        String reportTSV = "isolate_name\thighest_num_snps_with_expected_16S\tlowest_num_snps_with_other_isolate_sanger_16S\tother_isolate_sanger_16S\tlowest_num_snps_with_other_isolate_genome_16S\tother_isolate_genome_16S\tnum_genome_16S\tmax_num_snps_between_genome_16S\toutput_set\n";
         for (String genomeName : genomesetMap.keySet()) {
             String set = null;
             
