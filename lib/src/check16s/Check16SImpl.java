@@ -51,7 +51,6 @@ public class Check16SImpl {
                                               java.io.File baseDir) throws Exception {
 
         java.io.File rv = new java.io.File(baseDir.getPath()+"/"+filteredFileName);
-        rv.delete();
         
         PrintfStream outfile = new PrintfStream(rv.getPath());
         BufferedReader seqs = IO.openReader(originalFile.getPath());
@@ -167,7 +166,6 @@ public class Check16SImpl {
 
         // make a FASTA file to save all the 16S sequences into
         java.io.File rv = new java.io.File(baseDir.getPath()+"/"+fileName);
-        rv.delete();
         
         PrintfStream outfile = new PrintfStream(rv.getPath());
 
@@ -307,7 +305,6 @@ public class Check16SImpl {
                                         String fileName) throws Exception {
         java.io.File baseDir = query.getParentFile();
         java.io.File rv = new java.io.File(baseDir.getPath()+"/"+fileName);
-        rv.delete();
         
         String programName = "blastn";
         Program p = new Program(programName);
@@ -785,9 +782,7 @@ public class Check16SImpl {
         }
 
         // save the TSV report to a file
-        java.io.File tsvFile = java.io.File.createTempFile("report",".tsv",
-                                                           baseDir);
-        tsvFile.delete();
+        java.io.File tsvFile = new java.io.File(baseDir.getPath()+"/report.tsv");
         BufferedWriter outfile = new BufferedWriter(new FileWriter(tsvFile));
         outfile.write(reportTSV);
         outfile.close();
