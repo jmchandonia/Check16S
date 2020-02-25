@@ -62,7 +62,7 @@
             "optional": false,
             "advanced": false,
             "allow_multiple": false,
-            "default_values": "check16S-pass.genomeset",
+            "default_values": [ "check16S-pass.genomeset"],
             "field_type": "text",
             "text_options": {
                 "is_output_name": true,
@@ -74,7 +74,7 @@
             "optional": false,
             "advanced": false,
             "allow_multiple": false,
-            "default_values": "check16S-fail.genomeset",
+            "default_values": ["check16S-fail.genomeset"],
             "field_type": "text",
             "text_options": {
                 "is_output_name": true,
@@ -86,7 +86,7 @@
             "optional": false,
             "advanced": false,
             "allow_multiple": false,
-            "default_values": "check16S-unknown.genomeset",
+            "default_values": ["check16S-unknown.genomeset"],
             "field_type": "text",
             "text_options": {
                 "is_output_name": true,
@@ -122,13 +122,22 @@
                     "target_property": "min_significant_differences"
                 },{
                     "input_parameter": "output_genomeset_pass",
-                    "target_property": "output_genomeset_pass"
+                    "target_property": "output_genomeset_pass",
+                    "generated_value": {
+                        "prefix": "check16s-pass-"
+                    }
                 },{
                     "input_parameter": "output_genomeset_fail",
-                    "target_property": "output_genomeset_fail"
+                    "target_property": "output_genomeset_fail",
+                    "generated_value": {
+                        "prefix": "check16s-fail-"
+                    }
                 },{
                     "input_parameter": "output_genomeset_unknown",
-                    "target_property": "output_genomeset_unknown"
+                    "target_property": "output_genomeset_unknown",
+                    "generated_value": {
+                        "prefix": "check16s-unknown-"
+                    }
                 }
             ],
             "output_mapping": [

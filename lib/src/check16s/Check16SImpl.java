@@ -758,17 +758,17 @@ public class Check16SImpl {
             reportTSV += set+"\n";
         
             if (set.equals("pass")) {
-                System.out.println("Confirmed isolate "+isolateID);
+                System.out.println("Confirmed isolate "+isolateID+" "+reason);
                 reportText += "Confirmed isolate "+isolateID+" "+reason+"\n";
                 isolatesPassed.add(isolateID);
             }
             else if (set.equals("fail")) {
-                System.out.println("Failed isolate "+isolateID);
+                System.out.println("Failed isolate "+isolateID+" "+reason);
                 reportText += "Failed isolate "+isolateID+" "+reason+"\n";
                 isolatesFailed.add(isolateID);
             }
             else {
-                System.out.println("Unclear isolate "+isolateID);
+                System.out.println("Unclear isolate "+isolateID+" "+reason);
                 reportText += "Unclear isolate "+isolateID+" "+reason+"\n";
                 isolatesUnknown.add(isolateID);
             }
