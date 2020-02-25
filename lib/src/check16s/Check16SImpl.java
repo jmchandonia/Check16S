@@ -667,6 +667,7 @@ public class Check16SImpl {
         String reportTSV = "isolate_name\thighest_num_snps_with_expected_16S\tlowest_num_snps_with_other_sanger_16S\tother_sanger_16S\tlowest_num_snps_with_other_genome_16S\tother_genome_16S\tnum_genome_16S\tmax_num_snps_between_genome_16S\toutput_set\n";
         for (String genomeName : genomesetMap.keySet()) {
             String set = null;
+            String reason = "";
             
             int pos = genomeName.lastIndexOf(".genome");
             if (pos==-1)
@@ -674,9 +675,14 @@ public class Check16SImpl {
             String isolateID = genomeName.substring(0,pos);
 
             // first, check that a hit is possible
-            if ((!isolatesWithGenome16S.contains(isolateID)) ||
-                (!isolatesWithSanger16S.contains(isolateID)))
+            if (!isolatesWithGenome16S.contains(isolateID)) {
                 set = "unknown";
+                reason = "no 16S annotated in genome";
+            }
+            else if (!isolatesWithSanger16S.contains(isolateID)) {
+                set = "unknown";
+                reason = "no Sanger 16S provided";
+            }
 
             // check hits and build report table
             reportTSV += isolateID+"\t";
@@ -687,8 +693,10 @@ public class Check16SImpl {
             else {
                 reportTSV += ii+"\t";
                 expectedSNPs = ii.intValue();
-                if ((expectedSNPs > maxDiff) && (set==null))
+                if ((expectedSNPs > maxDiff) && (set==null)) {
                     set = "fail";
+                    reason = expectedSNPs+" SNPs found with Sanger sequence";
+                }
             }
 
             ii = minOtherSangerSNPs.get(isolateID);
@@ -697,8 +705,10 @@ public class Check16SImpl {
                 reportTSV += "n/a\tn/a\t";
                 if ((expectedSNPs > -1) &&
                     (expectedSNPs <= maxDiff) &&
-                    (set==null))
+                    (set==null)) {
                     set = "pass";
+                    reason = expectedSNPs+" SNPs found with Sanger sequence";
+                }
             }
             else {
                 reportTSV += ii+"\t"+bestOtherSanger.get(isolateID)+"\t";
@@ -708,10 +718,14 @@ public class Check16SImpl {
                         set = "fail";
                     else {
                         if ((expectedSNPs <= maxDiff) &&
-                            (expectedSNPs <= otherSNPs + minSigDiff))
+                            (expectedSNPs <= otherSNPs + minSigDiff)) {
                             set = "pass";
-                        else
+                            reason = expectedSNPs+" SNPs found with Sanger sequence";
+                        }
+                        else {
                             set = "fail";
+                            reason = expectedSNPs+" SNPs found with Sanger sequence, "+otherSNPs+" found with "+bestOtherSanger.get(isolateID);
+                        }
                     }
                 }
             }
@@ -730,28 +744,32 @@ public class Check16SImpl {
                 reportTSV += "n/a\t";
             else {
                 reportTSV += ii+"\t";
-                if (ii >= minSigDiff)
+                if (ii >= minSigDiff) {
                     set = "fail";
+                    reason = "multiple divergent 16S ("+ii+" SNPs) found";
+                }
             }
 
-            if (set==null)
+            if (set==null) {
                 set = "unknown";
+                reason = "not enough data";
+            }
 
             reportTSV += set+"\n";
         
             if (set.equals("pass")) {
                 System.out.println("Confirmed isolate "+isolateID);
-                reportText += "Confirmed isolate "+isolateID+"\n";
+                reportText += "Confirmed isolate "+isolateID+" "+reason+"\n";
                 isolatesPassed.add(isolateID);
             }
             else if (set.equals("fail")) {
                 System.out.println("Failed isolate "+isolateID);
-                reportText += "Failed isolate "+isolateID+"\n";
+                reportText += "Failed isolate "+isolateID+" "+reason+"\n";
                 isolatesFailed.add(isolateID);
             }
             else {
                 System.out.println("Unclear isolate "+isolateID);
-                reportText += "Unclear isolate "+isolateID+"\n";
+                reportText += "Unclear isolate "+isolateID+" "+reason+"\n";
                 isolatesUnknown.add(isolateID);
             }
         }
