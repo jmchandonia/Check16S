@@ -64,6 +64,7 @@ public class Check16SImpl {
                 continue;
             
             p.stripGaps();
+            p.stripType('-');
             p.writeFasta(outfile);
         }
         seqs.close();
@@ -203,6 +204,7 @@ public class Check16SImpl {
                     p.name = isolateID+"-"+(n16S++);
                     // strip any gaps already in the sequence
                     p.stripGaps();
+                    p.stripType('-');
                     // and save it in the "genome 16S" file
                     p.writeFasta(outfile);
                 }
@@ -558,7 +560,7 @@ public class Check16SImpl {
 
         // run blast
         System.out.println("Running BLAST");
-        java.io.File blastOutput = runBlast(fileGenome16S, fileSanger16S, "assembly-vs-genome-blast.tsv");
+        java.io.File blastOutput = runBlast(fileGenome16S, fileSanger16S, "genome-vs-sanger-blast.tsv");
 
         // process output
         Map<String,HashSet<String>> matches = processBlast(blastOutput);
@@ -662,7 +664,7 @@ public class Check16SImpl {
         HashSet<String> isolatesUnknown = new HashSet<String>();
 
         // build table of where each isolate ends up
-        String reportTSV = "isolate_name\thighest_num_snps_with_expected_16S\tlowest_num_snps_with_other_isolate_sanger_16S\tother_isolate_sanger_16S\tlowest_num_snps_with_other_isolate_genome_16S\tother_isolate_genome_16S\tnum_genome_16S\tmax_num_snps_between_genome_16S\toutput_set\n";
+        String reportTSV = "isolate_name\thighest_num_snps_with_expected_16S\tlowest_num_snps_with_other_sanger_16S\tother_sanger_16S\tlowest_num_snps_with_other_genome_16S\tother_genome_16S\tnum_genome_16S\tmax_num_snps_between_genome_16S\toutput_set\n";
         for (String genomeName : genomesetMap.keySet()) {
             String set = null;
             
