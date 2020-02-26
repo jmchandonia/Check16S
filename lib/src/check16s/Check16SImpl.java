@@ -512,32 +512,32 @@ public class Check16SImpl {
                 int n = nN(seq);
                 if (seq.length() < 500) {
                     System.out.println("Warning: "+isolateID+" genome 16S is too short to validate; length "+seq.length());
-                    reportText += "Warning: "+isolateID+" genome 16S is too short to validate; length "+seq.length();
+                    reportText += "Warning: "+isolateID+" genome 16S is too short to validate; length "+seq.length()+"\n";
                 }
                 else if (seq.length()-n < 500) {
                     System.out.println("Warning: "+isolateID+" genome 16S has too many Ns to validate well; length "+seq.length()+", nN "+n);
-                    reportText += "Warning: "+isolateID+" genome 16S has too many Ns to validate well; length "+seq.length()+", nN "+n;
+                    reportText += "Warning: "+isolateID+" genome 16S has too many Ns to validate well; length "+seq.length()+", nN "+n+"\n";
                 }
                 seq = sanger16S.get(isolateID);
                 if (seq==null) {
                     System.out.println("Warning: "+isolateID+" Sanger 16S not provided in Sanger set");
-                    reportText += "Warning: "+isolateID+" Sanger 16S not provided in Sanger set";
+                    reportText += "Warning: "+isolateID+" Sanger 16S not provided in Sanger set"+"\n";
                 }
                 else {
                     n = nN(seq);
                     if (seq.length() < 500) {
                         System.out.println("Warning: "+isolateID+" Sanger 16S is too short to validate; length "+seq.length());
-                        reportText += "Warning: "+isolateID+" Sanger 16S is too short to validate; length "+seq.length();
+                        reportText += "Warning: "+isolateID+" Sanger 16S is too short to validate; length "+seq.length()+"\n";
                     }
                     else if (seq.length()-n < 500) {
                         System.out.println("Warning: "+isolateID+" Sanger 16S has too many Ns to validate well; length "+seq.length()+", nN "+n);
-                        reportText += "Warning: "+isolateID+" Sanger 16S has too many Ns to validate well; length "+seq.length()+", nN "+n;
+                        reportText += "Warning: "+isolateID+" Sanger 16S has too many Ns to validate well; length "+seq.length()+", nN "+n+"\n";
                     }
                 }
             }
             else {
                 System.out.println("Warning - "+isolateID+" has multiple 16S annotated");
-                reportText += "Warning - "+isolateID+" has multiple 16S annotated";
+                reportText += "Warning - "+isolateID+" has multiple 16S annotated\n";
             }
         }
 
@@ -549,7 +549,7 @@ public class Check16SImpl {
             String isolateID = genomeName.substring(0,pos);
             if (!isolatesWithGenome16S.contains(isolateID)) {
                 System.out.println("Warning - "+isolateID+" has no 16S annotated");
-                reportText += "Warning - "+isolateID+" has no 16S annotated";
+                reportText += "Warning - "+isolateID+" has no 16S annotated\n";
                 numGenome16S.put(isolateID,new Integer(0));
             }
         }
